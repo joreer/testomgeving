@@ -41,6 +41,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Root Route
+app.get("/", (req, res) => {
+  res.send("<h1>Welcome to the CRM API</h1><p>Use the /api/clients and /api/quotes endpoints.</p>");
+});
+
 // Routes
 app.get("/api/clients", (req, res) => {
   res.json(clients);
