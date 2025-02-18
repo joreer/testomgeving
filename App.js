@@ -9,26 +9,55 @@ export default function App() {
   const [clients, setClients] = useState([]);
   const [quotes, setQuotes] = useState([]);
   const [newQuote, setNewQuote] = useState({ client: "", total_amount: "" });
+  const [statusMessage, setStatusMessage] = useState("Initializing...");
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/api/clients`).then((res) => setClients(res.data));
-    axios.get(`${API_BASE_URL}/api/quotes`).then((res) => setQuotes(res.data));
+    setStatusMessage("Fetching clients...");
+    axios.get(`${API_BASE_URL}/api/clients`)
+      .then((res) => {
+        setClients(res.data);
+        setStatusMessage("Clients loaded successfully");
+      })
+      .catch((error) => {
+        console.error("Error fetching clients:", error);
+        setStatusMessage("Failed to load clients");
+      });
+
+    setStatusMessage("Fetching quotes...");
+    axios.get(`${API_BASE_URL}/api/quotes`)
+      .then((res) => {
+        setQuotes(res.data);
+        setStatusMessage("Quotes loaded successfully");
+      })
+      .catch((error) => {
+        console.error("Error fetching quotes:", error);
+        setStatusMessage("Failed to load quotes");
+      });
     
     socket.on("quoteUpdated", (updatedQuotes) => {
       setQuotes(updatedQuotes);
+      setStatusMessage("Quotes updated via WebSocket");
     });
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post(`${API_BASE_URL}/api/quotes`, newQuote).then(() => {
-      setNewQuote({ client: "", total_amount: "" });
-    });
+    setStatusMessage("Submitting new quote...");
+    axios.post(`${API_BASE_URL}/api/quotes`, newQuote)
+      .then(() => {
+        setNewQuote({ client: "", total_amount: "" });
+        setStatusMessage("Quote added successfully");
+      })
+      .catch((error) => {
+        console.error("Error adding quote:", error);
+        setStatusMessage("Failed to add quote");
+      });
   };
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">CRM Dashboard</h1>
+      <p className="text-sm text-gray-500">{statusMessage}</p>
       <form onSubmit={handleSubmit} className="mb-4">
         <select 
           value={newQuote.client} 
